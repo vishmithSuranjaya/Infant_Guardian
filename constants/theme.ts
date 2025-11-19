@@ -11,17 +11,24 @@ const tintColorDark = '#fff';
 export const Colors = {
   light: {
     text: '#11181C',
-    background: '#fff',
+    background: '#6fc7d8',
+    card: '#ffffff',
+    cardAlt: '#f8f8f8',
     tint: tintColorLight,
     icon: '#687076',
+    themeIcon: '#FFD54A',
     tabIconDefault: '#687076',
     tabIconSelected: tintColorLight,
   },
   dark: {
-    text: '#ECEDEE',
-    background: '#151718',
+    text: '#E6EEF0',
+    background: '#062627',
+    // Use shades of the background (not pure black) so surfaces feel cohesive
+    card: '#0b3432', // slightly lighter than background
+    cardAlt: '#083532', // alternate surface shade
     tint: tintColorDark,
     icon: '#9BA1A6',
+    themeIcon: '#FFD54A',
     tabIconDefault: '#9BA1A6',
     tabIconSelected: tintColorDark,
   },

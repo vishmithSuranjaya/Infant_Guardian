@@ -1,112 +1,156 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
-
-import { Collapsible } from '@/components/ui/collapsible';
-import { ExternalLink } from '@/components/external-link';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Fonts } from '@/constants/theme';
+import { useThemeColor } from '@/hooks/use-theme-color';
+import React, { useState } from 'react';
+import { StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
+// ThemeContext removed — app follows system theme
 
-export default function TabTwoScreen() {
+export default function EventsScreen() {
+  // For now we'll show a placeholder last-fed time. This can be replaced
+  // with real data from storage or an API later.
+  const initial = new Date();
+
+  // Keep the full Date in state. The date portion is taken from device automatically.
+  const [lastFed, setLastFed] = useState<Date>(initial);
+  const [editing, setEditing] = useState(false);
+  // draftTime stores only the time string (HH:MM)
+  const pad = (n: number) => String(n).padStart(2, '0');
+  const formatTime = (d: Date) => `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  const formatDisplay = (d: Date) => `${d.toLocaleDateString()} ${formatTime(d)}`;
+
+  const [draftTime, setDraftTime] = useState(formatTime(initial));
+  // Use the theme 'card' color for the Last fed item so it appears white in light mode
+  const cardAlt = useThemeColor({}, 'card');
+  // Use the alternate card color for inputs (slightly different surface)
+  const inputBg = useThemeColor({}, 'cardAlt');
+  const tint = useThemeColor({}, 'tint');
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
-      headerImage={
-        <IconSymbol
-          size={310}
-          color="#808080"
-          name="chevron.left.forwardslash.chevron.right"
-          style={styles.headerImage}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText
-          type="title"
-          style={{
-            fontFamily: Fonts.rounded,
-          }}>
-          Explore
+    <ThemedView style={styles.container}>
+      <ThemedText type="title" style={styles.title}>
+        Events
+      </ThemedText>
+
+      {/* theme toggle removed; app follows system theme */}
+
+      <View style={[styles.card, { backgroundColor: cardAlt }] }>
+        <ThemedText type="subtitle" style={styles.eventLabel}>
+          Last fed
         </ThemedText>
-      </ThemedView>
-      <ThemedText>This app includes example code to help you get started.</ThemedText>
-      <Collapsible title="File-based routing">
-        <ThemedText>
-          This app has two screens:{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/explore.tsx</ThemedText>
-        </ThemedText>
-        <ThemedText>
-          The layout file in <ThemedText type="defaultSemiBold">app/(tabs)/_layout.tsx</ThemedText>{' '}
-          sets up the tab navigator.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/router/introduction">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Android, iOS, and web support">
-        <ThemedText>
-          You can open this project on Android, iOS, and the web. To open the web version, press{' '}
-          <ThemedText type="defaultSemiBold">w</ThemedText> in the terminal running this project.
-        </ThemedText>
-      </Collapsible>
-      <Collapsible title="Images">
-        <ThemedText>
-          For static images, you can use the <ThemedText type="defaultSemiBold">@2x</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">@3x</ThemedText> suffixes to provide files for
-          different screen densities
-        </ThemedText>
-        <Image
-          source={require('@/assets/images/react-logo.png')}
-          style={{ width: 100, height: 100, alignSelf: 'center' }}
-        />
-        <ExternalLink href="https://reactnative.dev/docs/images">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Light and dark mode components">
-        <ThemedText>
-          This template has light and dark mode support. The{' '}
-          <ThemedText type="defaultSemiBold">useColorScheme()</ThemedText> hook lets you inspect
-          what the user&apos;s current color scheme is, and so you can adjust UI colors accordingly.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Animations">
-        <ThemedText>
-          This template includes an example of an animated component. The{' '}
-          <ThemedText type="defaultSemiBold">components/HelloWave.tsx</ThemedText> component uses
-          the powerful{' '}
-          <ThemedText type="defaultSemiBold" style={{ fontFamily: Fonts.mono }}>
-            react-native-reanimated
-          </ThemedText>{' '}
-          library to create a waving hand animation.
-        </ThemedText>
-        {Platform.select({
-          ios: (
-            <ThemedText>
-              The <ThemedText type="defaultSemiBold">components/ParallaxScrollView.tsx</ThemedText>{' '}
-              component provides a parallax effect for the header image.
-            </ThemedText>
-          ),
-        })}
-      </Collapsible>
-    </ParallaxScrollView>
+
+        {editing ? (
+          <>
+            <TextInput
+              style={[styles.input, { backgroundColor: inputBg }]}
+              value={draftTime}
+              onChangeText={setDraftTime}
+              placeholder={formatTime(new Date())}
+              placeholderTextColor="#999"
+              keyboardType="numeric"
+            />
+            <View style={styles.buttonRow}>
+              <TouchableOpacity
+                style={[styles.smallButton, styles.saveButton]}
+                onPress={() => {
+                  // parse HH:MM
+                  const parts = (draftTime || '').split(':').map(p => parseInt(p, 10));
+                  const hours = Number.isFinite(parts[0]) ? parts[0] : new Date().getHours();
+                  const minutes = Number.isFinite(parts[1]) ? parts[1] : new Date().getMinutes();
+                  const newDate = new Date(lastFed);
+                  newDate.setHours(hours, minutes, 0, 0);
+                  setLastFed(newDate);
+                  setEditing(false);
+                }}
+              >
+                <ThemedText style={styles.smallButtonText}>Save</ThemedText>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.smallButton, styles.cancelButton]}
+                onPress={() => {
+                  setDraftTime(formatTime(lastFed));
+                  setEditing(false);
+                }}
+              >
+                <ThemedText style={styles.smallButtonText}>Cancel</ThemedText>
+              </TouchableOpacity>
+            </View>
+          </>
+        ) : (
+          <View style={styles.eventRow}>
+            <ThemedText style={styles.eventDate}>{lastFed.toLocaleDateString()}</ThemedText>
+            <TouchableOpacity onPress={() => { setDraftTime(formatTime(lastFed)); setEditing(true); }} activeOpacity={0.8}>
+              <ThemedText style={styles.eventTime}>{formatTime(lastFed)}</ThemedText>
+            </TouchableOpacity>
+          </View>
+        )}
+      </View>
+    </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
-  headerImage: {
-    color: '#808080',
-    bottom: -90,
-    left: -35,
-    position: 'absolute',
+  container: {
+    flex: 1,
+    padding: 24,
+    paddingTop: 40,
   },
-  titleContainer: {
+  title: {
+    fontSize: 24,
+    fontWeight: '700',
+    marginBottom: 16,
+  },
+  card: {
+    padding: 16,
+    borderRadius: 12,
+  },
+  eventLabel: {
+    fontSize: 16,
+    marginBottom: 8,
+  },
+  eventValue: {
+    fontSize: 18,
+    fontWeight: '700',
+  },
+  eventRow: {
     flexDirection: 'row',
-    gap: 8,
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
   },
+  eventDate: {
+    fontSize: 16,
+  },
+  eventTime: {
+    fontSize: 18,
+    fontWeight: '700',
+  },
+  input: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    fontSize: 16,
+    color: '#222',
+    marginBottom: 12,
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+  },
+  smallButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    marginRight: 12,
+  },
+  saveButton: {
+    backgroundColor: '#1b7f5a',
+  },
+  cancelButton: {
+    backgroundColor: '#ccc',
+  },
+  smallButtonText: {
+    color: '#fff',
+    fontWeight: '700',
+  },
+  
 });

@@ -1,98 +1,202 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
-
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+import { useThemeColor } from '@/hooks/use-theme-color';
+import { FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
+import React, { useState } from 'react';
+import { Dimensions, Image, StyleSheet, TouchableOpacity, View } from 'react-native';
+// ThemeContext removed — app uses system color scheme only
 
-export default function HomeScreen() {
+const { width } = Dimensions.get('window');
+
+export default function MainScreen() {
+  const [fanOn, setFanOn] = useState(false);
+  const [cotMobileOn, setCotMobileOn] = useState(false);
+  const cardBg = useThemeColor({}, 'background');
+  const circleBg = useThemeColor({}, 'background');
+  const panelBg = useThemeColor({}, 'card');
+  const tint = useThemeColor({}, 'tint');
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
+    <ThemedView style={styles.container}>
+      {/* theme toggle removed; app follows system theme */}
+      <View style={styles.centerContent}>
+        <ThemedText type="title" style={styles.title} lightColor="#fff">
+          InfantGuardian
         </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
+        <View style={[styles.card, { backgroundColor: panelBg }]}>
+          <View style={styles.circleImageWrap}>
+            <View style={[styles.circleBorder, { backgroundColor: "#ffffff" }] }>
+              <Image
+                source={require('@/assets/images/baby_main_page.png')}
+                style={[styles.circleImage, { backgroundColor: panelBg }]}
+                resizeMode="contain"
               />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+            </View>
+          </View>
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+          <View style={[styles.statusPanel, { backgroundColor: panelBg }]}> 
+            <ThemedText style={styles.statusText} type="subtitle">
+              MONITORING ACTIVE
+            </ThemedText>
+            <View style={styles.statusRow}>
+              <View style={styles.statusItem}>
+                <MaterialCommunityIcons name="thermometer" size={22} color="#e57373" style={{marginRight: 4}} />
+                <ThemedText style={styles.tempText}>
+                  6.7°C
+                </ThemedText>
+                <ThemedText style={styles.statusLabel}>Temperature</ThemedText>
+              </View>
+            </View>
+          </View>
+        </View>
+        <View style={styles.controlRow}>
+          <TouchableOpacity
+            style={[styles.controlButton, fanOn && styles.controlButtonActive]}
+            onPress={() => setFanOn(v => !v)}
+            activeOpacity={0.85}
+          >
+            <MaterialCommunityIcons name="fan" size={22} color={fanOn ? '#1b7f5a' : '#888'} style={{marginRight: 8}} />
+            <ThemedText style={[styles.controlButtonText, fanOn && styles.controlButtonTextActive]}>
+              Fan {fanOn ? 'ON' : 'OFF'}
+            </ThemedText>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.controlButton, cotMobileOn && styles.controlButtonActive]}
+            onPress={() => setCotMobileOn(v => !v)}
+            activeOpacity={0.85}
+          >
+            <FontAwesome5 name="baby" size={20} color={cotMobileOn ? '#1b7f5a' : '#888'} style={{marginRight: 8}} />
+            <ThemedText style={[styles.controlButtonText, cotMobileOn && styles.controlButtonTextActive]}>
+              Cot Mobile {cotMobileOn ? 'ON' : 'OFF'}
+            </ThemedText>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </ThemedView>
   );
 }
 
+const CARD_WIDTH = Math.min(360, width - 32);
+
 const styles = StyleSheet.create({
-  titleContainer: {
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  centerContent: {
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: '700',
+    marginBottom: 108,
+    marginTop: -68,
+    alignSelf: 'flex-start',
+    marginLeft: 24,
+  },
+  card: {
+    width: CARD_WIDTH,
+    borderRadius: 28,
+    alignItems: 'center',
+    paddingVertical: 28,
+    paddingHorizontal: 16,
+    shadowColor: '#000', // changed the color
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 4,
+  },
+  controlRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 48,
+  // removed
+    borderRadius: 22,
+    paddingVertical: 12,
+    paddingHorizontal: 22,
+    marginHorizontal: 4,
+  },
+  controlButton: {
+    borderRadius: 22,
+    paddingVertical: 12,
+    paddingHorizontal: 22,
+    marginHorizontal: 4,
+    backgroundColor: '#f5f5f5',
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  controlButtonActive: {
+    backgroundColor: '#b2dfdb',
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  controlButtonText: {
+    fontWeight: '600',
+    fontSize: 16,
   },
+  controlButtonTextActive: {
+    color: '#1b7f5a',
+  },
+  circleImageWrap: {
+    marginBottom: 18,
+  },
+  circleBorder: {
+    borderWidth: 6,
+    borderColor: '#4caf50',
+    borderRadius: 100,
+    padding: 6,
+    backgroundColor: '#fff',
+  },
+  circleImage: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: '#fff',
+  },
+  statusText: {
+    fontWeight: '700',
+    fontSize: 20,
+    marginBottom: 18,
+    textAlign: 'center',
+  },
+  statusRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    width: '100%',
+    marginBottom: 24,
+  },
+  statusPanel: {
+    width: '92%',
+    borderRadius: 16,
+    paddingVertical: 14,
+    paddingHorizontal: 10,
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  statusItem: {
+    flex: 1,
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    maxWidth: 160,
+  },
+  cryingText: {
+    fontWeight: '700',
+    color: '#e57373',
+    fontSize: 18,
+    marginRight: 4,
+  },
+  statusLabel: {
+    fontSize: 13,
+    color: '#888',
+    marginLeft: 2,
+  },
+  // deviceButton and deviceButtonText removed
+  tempText: {
+    fontWeight: '700',
+    color: '#e57373',
+    fontSize: 18,
+    marginRight: 4,
+  },
+  
 });
